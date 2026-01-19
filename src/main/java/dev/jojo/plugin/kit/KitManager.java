@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.protocol.EntityStatType;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -12,12 +11,10 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import org.jetbrains.annotations.Async;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -90,8 +87,12 @@ public class KitManager {
         EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
         int index = DefaultEntityStatTypes.getHealth();
 
-        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> { //TODO TESTER LA THEORIE DES THREADS DU MALHEUR
+        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
             stats.setStatValue(index, stats.get(index).getMax());
         },500, TimeUnit.MILLISECONDS);
+    }
+
+    public Map<String, Kit> getKits() {
+        return kits;
     }
 }
