@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import dev.jojo.plugin.TestPlugin;
 
 import java.io.File;
 import java.util.HashMap;
@@ -24,18 +25,17 @@ public class KitManager {
     private final ObjectMapper mapper = new ObjectMapper();
     private final File kitsFolder;
     private final Map<String, Kit> kits;
-    private final JavaPlugin plugin;
+    private final JavaPlugin plugin = TestPlugin.getPluginInstance();
 
 
-    private KitManager(JavaPlugin plugin){
-        this.plugin = plugin;
+    private KitManager(){
         this.kitsFolder = new File(plugin.getDataDirectory().toFile(),"kits");
         this.kits = new HashMap<>();
     }
 
-    public static KitManager getInstance(JavaPlugin plugin) {
+    public static KitManager getInstance() {
         if (instance == null){
-            instance = new KitManager(plugin);
+            instance = new KitManager();
         }
         return instance;
     }

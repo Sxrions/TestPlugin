@@ -13,9 +13,14 @@ import java.util.logging.Level;
 
 public class TestPlugin extends JavaPlugin {
     HytaleLogger logger = HytaleLogger.forEnclosingClass();
+    static TestPlugin pluginInstance;
 
-    public TestPlugin(@NotNull JavaPluginInit init) {
+    private TestPlugin(@NotNull JavaPluginInit init) {
         super(init);
+    }
+
+    public static TestPlugin getPluginInstance(){
+        return pluginInstance;
     }
 
     @Override
@@ -23,10 +28,6 @@ public class TestPlugin extends JavaPlugin {
         super.setup();
         logger.at(Level.INFO).log("OMG LE MOD MARCHE");
         logger.at(Level.INFO).log(this.getDataDirectory().toFile().toString());
-
-        DuelManager duelManager = DuelManager.getInstance(this);
-        KitManager kitManager = duelManager.getKitManager();
-        ArenaManager arenaManager = duelManager.getArenaManager();
 
         this.getCommandRegistry().registerCommand(new KitCommand("kit", "Applique le kit la", kitManager));
     }

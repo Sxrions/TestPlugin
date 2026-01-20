@@ -20,10 +20,5 @@ public class Kit {
     public String getName() {
         return name;
     }
-
-    public class KitPojo {
-        String itemName;
-        Integer quantity;
-    }
 }
 

@@ -1,5 +1,8 @@
 package dev.jojo.plugin.arena;
 
+import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.World;
+
 public class Arena {
     private String worldName;
     private float[] spawn1;
@@ -47,5 +50,9 @@ public class Arena {
 
     public float[] getSpawn2() {
         return spawn2;
+    }
+
+    public World getWorld(){
+        return Universe.get().getWorld(worldName);
     }
 }

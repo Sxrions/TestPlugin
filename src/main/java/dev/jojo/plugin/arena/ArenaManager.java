@@ -3,6 +3,7 @@ package dev.jojo.plugin.arena;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.JavaType;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import dev.jojo.plugin.TestPlugin;
 
 import java.io.File;
 import java.util.*;
@@ -12,17 +13,16 @@ public class ArenaManager {
     private final ObjectMapper mapper = new ObjectMapper();
     private final File arenasFolder;
     private final Map<String, Arena> arenas;
-    private final JavaPlugin plugin;
+    private final JavaPlugin plugin = TestPlugin.getPluginInstance();
 
-    private ArenaManager(JavaPlugin plugin){
-        this.plugin = plugin;
+    private ArenaManager(){
         this.arenasFolder = new File(plugin.getDataDirectory().toFile(), "arenas");
         arenas = new HashMap<>();
     }
 
-    public static ArenaManager getInstance(JavaPlugin plugin) {
+    public static ArenaManager getInstance() {
         if (instance == null) {
-            instance = new ArenaManager(plugin);
+            instance = new ArenaManager();
         }
         return instance;
     }
