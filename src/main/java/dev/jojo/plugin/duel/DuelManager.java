@@ -22,8 +22,8 @@ public class DuelManager {
         this.playerRefDuelMap = new HashMap<>();
         this.duels = new HashSet<>();
         this.plugin = plugin;
-        this.kitManager = new KitManager(plugin);
-        this.arenaManager = new ArenaManager(plugin);
+        this.kitManager = KitManager.getInstance(plugin);
+        this.arenaManager = ArenaManager.getInstance(plugin);
         this.kitManager.loadKits();
         this.arenaManager.loadArenas();
 

@@ -8,15 +8,23 @@ import java.io.File;
 import java.util.*;
 
 public class ArenaManager {
+    private static ArenaManager instance;
     private final ObjectMapper mapper = new ObjectMapper();
     private final File arenasFolder;
     private final Map<String, Arena> arenas;
     private final JavaPlugin plugin;
 
-    public ArenaManager(JavaPlugin plugin){
+    private ArenaManager(JavaPlugin plugin){
         this.plugin = plugin;
         this.arenasFolder = new File(plugin.getDataDirectory().toFile(), "arenas");
         arenas = new HashMap<>();
+    }
+
+    public static ArenaManager getInstance(JavaPlugin plugin) {
+        if (instance == null) {
+            instance = new ArenaManager(plugin);
+        }
+        return instance;
     }
 
     public Arena getRandomFreeArena(){
