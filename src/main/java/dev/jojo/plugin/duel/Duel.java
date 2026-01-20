@@ -1,5 +1,6 @@
 package dev.jojo.plugin.duel;
 
+import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
@@ -10,6 +11,7 @@ import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 import dev.jojo.plugin.arena.Arena;
 import dev.jojo.plugin.kit.Kit;
 import dev.jojo.plugin.kit.KitManager;
@@ -25,7 +27,7 @@ public class Duel {
     private String kitName;
 
     private int countdown = 5;
-    private int timer = 120;
+    private int timer = 20;
 
     private ScheduledFuture<?> taskCountdown;
     private ScheduledFuture<?> taskTimer;
@@ -37,10 +39,11 @@ public class Duel {
         this.kitName = kitName;
 
         this.arena.setOccupied(true); //OCCUPATION DE L'ARENE DES LA CREATION DU DUEL
-        teleportPlayers();
     }
 
     public void startCountdown(){
+        teleportPlayer(player1);
+        teleportPlayer(player2);
         this.state = DuelState.STARTING;
         taskCountdown = HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(() -> {
             if (countdown<=0){
@@ -48,9 +51,8 @@ public class Duel {
                 start();
                 return;
             }
+            arena.getWorld().sendMessage(Message.raw("" + countdown));
             countdown--;
-            player1.sendMessage(Message.raw("" + countdown));
-            player2.sendMessage(Message.raw("" + countdown));
         },0,1,TimeUnit.SECONDS);
     }
 
@@ -78,6 +80,7 @@ public class Duel {
 
     public void endDraw(){
         this.state = DuelState.ENDING;
+        EventTitleUtil.showEventTitleToWorld(Message.raw("DRAW !"), Message.raw("You are all guez"), true, null, 1,1,1,player1.getReference().getStore());
         //TODO Affichage DRAW puis call end()
     }
 
@@ -93,20 +96,27 @@ public class Duel {
         ENDING
     }
 
-    private void teleportPlayers(){
+    private void teleportPlayer(Player player){
         World world = arena.getWorld();
-        World wp1 = player1.getWorld();
-        World wp2 = player2.getWorld();
+        World wp1 = player.getWorld();
 
         wp1.execute(() -> {
-            Store<EntityStore> store = player1.getReference().getStore();
-            Teleport teleport = Teleport.createForPlayer(world, new Vector3d(arena.getSpawn1()[0],arena.getSpawn1()[1],arena.getSpawn1()[2]), new Vector3f(0,0,0));
-            store.addComponent(player1.getReference(), Teleport.getComponentType(), teleport);
-        });
-        wp2.execute(() -> {
-            Store<EntityStore> store = player2.getReference().getStore();
-            Teleport teleport = Teleport.createForPlayer(world, new Vector3d(arena.getSpawn2()[0],arena.getSpawn2()[1],arena.getSpawn2()[2]), new Vector3f(0,0,0));
-            store.addComponent(player2.getReference(), Teleport.getComponentType(), teleport);
+            Ref<EntityStore> ref = player.getReference();
+            if (ref == null){
+                HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
+                    teleportPlayer(player);
+                },100,TimeUnit.MILLISECONDS);
+                return;
+            }
+
+            Store<EntityStore> store = ref.getStore();
+            Teleport teleport;
+            if (player.equals(player1)){
+                teleport = new Teleport(world, new Vector3d(arena.getSpawn1()[0],arena.getSpawn1()[1],arena.getSpawn1()[2]), new Vector3f(0,0,0));
+            }else{
+                teleport = new Teleport(world, new Vector3d(arena.getSpawn2()[0],arena.getSpawn2()[1],arena.getSpawn2()[2]), new Vector3f(0,0,0));
+            }
+            store.addComponent(ref, Teleport.getComponentType(), teleport);
         });
     }
 }

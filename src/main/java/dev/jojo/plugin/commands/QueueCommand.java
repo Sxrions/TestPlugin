@@ -11,27 +11,27 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import dev.jojo.plugin.duel.DuelManager;
 import dev.jojo.plugin.kit.KitManager;
 import org.jetbrains.annotations.NotNull;
 
-public class KitCommand extends AbstractPlayerCommand {
-    private KitManager kitManager;
-    private final RequiredArg<String> arg;
+public class QueueCommand extends AbstractPlayerCommand {
+    private final RequiredArg<String> kit;
 
-    public KitCommand(@NotNull String name, @NotNull String description, @NotNull KitManager kitManager) {
+    public QueueCommand(@NotNull String name, @NotNull String description) {
         super(name, description);
-        this.kitManager = kitManager;
-        arg = withRequiredArg("kit", "The kit that will be applied", ArgTypes.STRING);
+        kit = withRequiredArg("kit", "Kit", ArgTypes.STRING);
     }
 
     @Override
     protected void execute(@NotNull CommandContext paramCommandContext, @NotNull Store<EntityStore> paramStore, @NotNull Ref<EntityStore> paramRef, @NotNull PlayerRef paramPlayerRef, @NotNull World paramWorld) {
-        String kitName = arg.get(paramCommandContext);
+        String kitName = kit.get(paramCommandContext);
+        KitManager kitManager = KitManager.getInstance();
+        DuelManager duelManager = DuelManager.getInstance();
         if (kitManager.exists(kitName)){
             Player player = paramStore.getComponent(paramRef, Player.getComponentType());
-            paramCommandContext.sendMessage(Message.raw("Application du kit " + kitName));
             assert player != null;
-            kitManager.applyKit(player, kitName);
+            duelManager.addToQueue(player,kitName);
         } else {
             paramCommandContext.sendMessage(Message.raw("Kit non existant"));
         }

@@ -25,10 +25,11 @@ public class KitManager {
     private final ObjectMapper mapper = new ObjectMapper();
     private final File kitsFolder;
     private final Map<String, Kit> kits;
-    private final JavaPlugin plugin = TestPlugin.getPluginInstance();
+    private final JavaPlugin plugin;
 
 
     private KitManager(){
+        this.plugin = TestPlugin.getPluginInstance();
         this.kitsFolder = new File(plugin.getDataDirectory().toFile(),"kits");
         this.kits = new HashMap<>();
     }
@@ -77,27 +78,28 @@ public class KitManager {
     }
 
     public void applyKit(Player player, String kitName){
-        player.getInventory().clear();
-        Kit kit = getKit(kitName);
-        Map<String, Integer> items = kit.getItems();
-        for (String itemId : items.keySet()) {
-            //ItemStack itemStack = new ItemStack(itemId);
-            ItemStack itemStack = new ItemStack(itemId, items.get(itemId));
-            if (itemId.contains("Armor")){
-                player.getInventory().getArmor().addItemStack(itemStack);
-            }else {
-                player.getInventory().getCombinedHotbarFirst().addItemStack(itemStack);
+        player.getWorld().execute(() -> {
+            player.getInventory().clear();
+            Kit kit = getKit(kitName);
+            Map<String, Integer> items = kit.getItems();
+            for (String itemId : items.keySet()) {
+                ItemStack itemStack = new ItemStack(itemId, items.get(itemId));
+                if (itemId.contains("Armor")){
+                    player.getInventory().getArmor().addItemStack(itemStack);
+                }else {
+                    player.getInventory().getCombinedHotbarFirst().addItemStack(itemStack);
+                }
             }
-        }
 
-        Ref<EntityStore> ref = player.getReference();
-        Store<EntityStore> store = ref.getStore();
-        EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
-        int index = DefaultEntityStatTypes.getHealth();
+            Ref<EntityStore> ref = player.getReference();
+            Store<EntityStore> store = ref.getStore();
+            EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
+            int index = DefaultEntityStatTypes.getHealth();
 
-        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
-            stats.setStatValue(index, stats.get(index).getMax());
-        },500, TimeUnit.MILLISECONDS);
+            HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
+                stats.setStatValue(index, stats.get(index).getMax());
+            },500, TimeUnit.MILLISECONDS);
+        });
     }
 
     public Map<String, Kit> getKits() {

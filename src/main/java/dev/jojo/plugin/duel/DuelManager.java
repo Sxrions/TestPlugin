@@ -16,16 +16,15 @@ public class DuelManager {
     private final Map<Player, Duel> playerDuelMap;
     private final Collection<Duel> duels;
     private final ArenaManager arenaManager;
-    private final KitManager kitManager;
     private final Map<String, Queue<Player>> queues;
     private final Map<Player, String> playerKitQueueMap;
 
     private DuelManager() {
         this.playerDuelMap = new HashMap<>();
         this.duels = new HashSet<>();
-        this.kitManager = KitManager.getInstance();
+        KitManager kitManager = KitManager.getInstance();
         this.arenaManager = ArenaManager.getInstance();
-        this.kitManager.loadKits();
+        kitManager.loadKits();
         this.arenaManager.loadArenas();
 
         this.queues = new HashMap<>();
@@ -46,6 +45,7 @@ public class DuelManager {
     public void addToQueue(Player player, String kit) {
         queues.get(kit).add(player);
         playerKitQueueMap.put(player, kit);
+        matchMake(kit);
     }
 
     public void removeFromQueue(Player player) {
@@ -58,9 +58,8 @@ public class DuelManager {
     public boolean matchMake(String kit) {
         Arena randomArena = arenaManager.getRandomFreeArena();
         if (queues.get(kit).size() >= 2 && randomArena != null) {
-            //TODO duel start, remove from queue, ajout des joueurs dans les MAP
-            Player p1 = queues.get(kit).element();
-            Player p2 = queues.get(kit).element();
+            Player p1 = queues.get(kit).remove();
+            Player p2 = queues.get(kit).remove();
             Duel duel = new Duel(p1,p2,randomArena,kit);
             playerDuelMap.put(p1,duel);
             playerDuelMap.put(p2,duel);
@@ -70,5 +69,18 @@ public class DuelManager {
         }
 
         return false;
+    }
+
+    //DEBUG
+    public String getQueue(String kitName){
+        String result = "";
+        int cpt = 1;
+        if (queues.containsKey(kitName)){
+            for (Player player : queues.get(kitName)) {
+                result += "1 : " + player.getDisplayName() + " ";
+                cpt++;
+            }
+        }
+        return result;
     }
 }

@@ -28,14 +28,16 @@ public class ArenaManager {
     }
 
     public Arena getRandomFreeArena(){
-        Collection<Arena> arenasList = new ArrayList<>();
+        ArrayList<Arena> arenasList = new ArrayList<>();
         for (Arena arena : arenas.values()) {
             if (!arena.isOccupied()){
                 arenasList.add(arena);
             }
         }
-        int index = (int) Math.round(Math.random() * (arenasList.size()-1));
-        return null;
+        if (!arenasList.isEmpty()){
+            int index = (int) Math.round(Math.random() * (arenasList.size()-1));
+            return arenasList.get(index);
+        } return null;
     }
 
     public void loadArenas(){
