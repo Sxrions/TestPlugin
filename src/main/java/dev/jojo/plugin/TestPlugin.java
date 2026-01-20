@@ -29,6 +29,6 @@ public class TestPlugin extends JavaPlugin {
         logger.at(Level.INFO).log("OMG LE MOD MARCHE");
         logger.at(Level.INFO).log(this.getDataDirectory().toFile().toString());
 
-        this.getCommandRegistry().registerCommand(new KitCommand("kit", "Applique le kit la", kitManager));
+        this.getCommandRegistry().registerCommand(new KitCommand("kit", "Applique le kit la", KitManager.getInstance()));
     }
 }
