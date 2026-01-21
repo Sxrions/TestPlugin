@@ -32,8 +32,6 @@ public class DuelManager {
         this.arenaManager.loadArenas();
 
         plugin.getEventRegistry().register(PlayerDisconnectEvent.class, this::handlePlayerDisconnect);
-        //plugin.getEntityStoreRegistry().registerSystem((ISystem<EntityStore>)new DuelDeath());
-
 
         this.queues = new HashMap<>();
         for (String kit : kitManager.getKits().keySet()) {
@@ -68,9 +66,9 @@ public class DuelManager {
         if (queues.get(kit).size() >= 2 && randomArena != null) {
             PlayerRef p1 = queues.get(kit).remove();
             PlayerRef p2 = queues.get(kit).remove();
-            Duel duel = new Duel(p1,p2,randomArena,kit);
-            playerDuelMap.put(p1,duel);
-            playerDuelMap.put(p2,duel);
+            Duel duel = new Duel(p1, p2, randomArena, kit);
+            playerDuelMap.put(p1, duel);
+            playerDuelMap.put(p2, duel);
             duel.startCountdown();
             return true;
         }
@@ -79,10 +77,10 @@ public class DuelManager {
     }
 
     //DEBUG
-    public String getQueue(String kitName){
+    public String getQueue(String kitName) {
         String result = "";
         int cpt = 1;
-        if (queues.containsKey(kitName)){
+        if (queues.containsKey(kitName)) {
             for (PlayerRef playerRef : queues.get(kitName)) {
                 result += "1 : " + playerRef.getUsername() + " ";
                 cpt++;
@@ -91,13 +89,10 @@ public class DuelManager {
         return result;
     }
 
-    public void handlePlayerDisconnect(PlayerDisconnectEvent evt){
+    public void handlePlayerDisconnect(PlayerDisconnectEvent evt) {
         if (evt == null) return;
         PlayerRef disconnected = evt.getPlayerRef();
-        if (disconnected == null) return;
-
         removeFromQueue(disconnected);
-
         Duel duel;
         synchronized (playerDuelMap) {
             duel = playerDuelMap.remove(disconnected);
@@ -110,59 +105,35 @@ public class DuelManager {
         }
 
         if (duel == null) {
-            return; // nothing to do
+            return;
         }
-
-        // Cancel any scheduled tasks related to this duel to avoid async access after removal
-        try { duel.cancelTasks(); } catch (Throwable ignored) {}
-
-        // Call end() defensively. Duel.end already schedules work on the arena world when needed.
-        try {
-            duel.end(disconnected);
-        } catch (Throwable t) {
-            System.out.println("handlePlayerDisconnect: duel.end failed: " + t.getMessage());
-        }
+        duel.cancelTasks();
+        duel.end(disconnected);
 
         matchMake(duel.getKitName());
-
     }
 
-    public void handlePlayerDeath(PlayerRef deadPlayerRef){
+    public void handlePlayerDeath(PlayerRef deadPlayerRef) {
         if (deadPlayerRef == null) return;
 
-        // Defensive retrieval of store and world: these can be null if the player is already removed
-        Ref<EntityStore> playerRefRef = null;
-        try { playerRefRef = deadPlayerRef.getReference(); } catch (Throwable t) { /* ignore */ }
-        if (playerRefRef == null) {
-            return;
-        }
+        Ref<EntityStore> playerRefRef = deadPlayerRef.getReference();
 
-        Store<EntityStore> store = null;
-        try { store = playerRefRef.getStore(); } catch (Throwable t) { System.out.println("handlePlayerDeath: getStore failed: " + t.getMessage()); }
-        if (store == null) {
-            return;
-        }
+        Store<EntityStore> store = playerRefRef.getStore();
 
-        World world = null;
-        try { world = store.getExternalData().getWorld(); } catch (Throwable t) { System.out.println("handlePlayerDeath: get world failed: " + t.getMessage()); }
-        if (world == null) {
-            return;
-        }
+        World world = store.getExternalData().getWorld();
 
 
-        if (playerDuelMap.containsKey(deadPlayerRef)){
+        if (playerDuelMap.containsKey(deadPlayerRef)) {
             Duel duel = playerDuelMap.get(deadPlayerRef);
             PlayerRef player1Ref = duel.getPlayerRef1();
             PlayerRef player2Ref = duel.getPlayerRef2();
 
-            World finalWorld = world;
-            Store<EntityStore> finalStore = store;
 
             HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
-                finalWorld.execute(() -> {
+                world.execute(() -> {
                     duel.end(deadPlayerRef);
-                    try { playerDuelMap.remove(player1Ref); } catch (Throwable ignored) {}
-                    try { playerDuelMap.remove(player2Ref); } catch (Throwable ignored) {}
+                    playerDuelMap.remove(player1Ref);
+                    playerDuelMap.remove(player2Ref);
                 });
             }, 1000, TimeUnit.MILLISECONDS);
             matchMake(duel.getKitName());

@@ -16,7 +16,6 @@ import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
-import com.hypixel.hytale.server.core.util.UUIDUtil;
 import dev.jojo.plugin.arena.Arena;
 import dev.jojo.plugin.kit.KitManager;
 
@@ -148,14 +147,7 @@ public class Duel {
     }
 
     public void end(){
-        if (taskTimer != null) {
-            try { taskTimer.cancel(false); } catch (Throwable ignored) {}
-            taskTimer = null;
-        }
-        if (taskCountdown != null) {
-            try { taskCountdown.cancel(false); } catch (Throwable ignored) {}
-            taskCountdown = null;
-        }
+        cancelTasks();
 
         Player p1 = arena.getWorld().getEntityStore().getStore().getComponent(playerRef1.getReference(), Player.getComponentType());
         Player p2 = arena.getWorld().getEntityStore().getStore().getComponent(playerRef2.getReference(), Player.getComponentType());
@@ -306,7 +298,6 @@ public class Duel {
         });
     }
 
-    // Expose cancellation to be called from DuelManager on disconnect
     public void cancelTasks(){
         if (taskTimer != null) {
             try { taskTimer.cancel(false); } catch (Throwable ignored) {}
@@ -336,7 +327,9 @@ public class Duel {
                 Store<EntityStore> store = ref.getStore();
                 EntityStatMap stats = store.getComponent(ref,EntityStatMap.getComponentType());
                 int healthIndex = DefaultEntityStatTypes.getHealth();
-                stats.maximizeStatValue(healthIndex);
+                if (stats!=null){
+                    stats.maximizeStatValue(healthIndex);
+                }
             });
         }
     }
