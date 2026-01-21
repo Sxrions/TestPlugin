@@ -10,6 +10,7 @@ import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import dev.jojo.plugin.TestPlugin;
 
@@ -77,8 +78,10 @@ public class KitManager {
         return kits.containsKey(name);
     }
 
-    public void applyKit(Player player, String kitName){
-        player.getWorld().execute(() -> {
+    public void applyKit(PlayerRef playerRef, String kitName){
+        Store<EntityStore> store = playerRef.getReference().getStore();
+        store.getExternalData().getWorld().execute(() -> {
+            Player player = store.getComponent(playerRef.getReference(), Player.getComponentType());
             player.getInventory().clear();
             Kit kit = getKit(kitName);
             Map<String, Integer> items = kit.getItems();
@@ -91,8 +94,7 @@ public class KitManager {
                 }
             }
 
-            Ref<EntityStore> ref = player.getReference();
-            Store<EntityStore> store = ref.getStore();
+            Ref<EntityStore> ref = playerRef.getReference();
             EntityStatMap stats = store.getComponent(ref, EntityStatMap.getComponentType());
             int index = DefaultEntityStatTypes.getHealth();
 

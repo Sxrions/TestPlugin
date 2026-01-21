@@ -25,15 +25,16 @@ public class QueueCommand extends AbstractPlayerCommand {
 
     @Override
     protected void execute(@NotNull CommandContext paramCommandContext, @NotNull Store<EntityStore> paramStore, @NotNull Ref<EntityStore> paramRef, @NotNull PlayerRef paramPlayerRef, @NotNull World paramWorld) {
-        String kitName = kit.get(paramCommandContext);
-        KitManager kitManager = KitManager.getInstance();
-        DuelManager duelManager = DuelManager.getInstance();
-        if (kitManager.exists(kitName)){
-            Player player = paramStore.getComponent(paramRef, Player.getComponentType());
-            assert player != null;
-            duelManager.addToQueue(player,kitName);
-        } else {
-            paramCommandContext.sendMessage(Message.raw("Kit non existant"));
-        }
+        paramWorld.execute(() -> {
+            String kitName = kit.get(paramCommandContext);
+            KitManager kitManager = KitManager.getInstance();
+            DuelManager duelManager = DuelManager.getInstance();
+            if (kitManager.exists(kitName)){
+                assert paramPlayerRef != null;
+                duelManager.addToQueue(paramPlayerRef,kitName);
+            } else {
+                paramCommandContext.sendMessage(Message.raw("Kit non existant"));
+            }
+        });
     }
 }
