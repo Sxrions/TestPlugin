@@ -7,8 +7,10 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import dev.jojo.plugin.commands.QueueCommand;
 import dev.jojo.plugin.commands.SeeQueueCommand;
-import dev.jojo.plugin.deathsystem.DuelDeath;
+import dev.jojo.plugin.systems.BlockDamageSystem;
+import dev.jojo.plugin.systems.DuelDamageSystem;
 import dev.jojo.plugin.duel.DuelManager;
+import dev.jojo.plugin.systems.NoInteractionSystem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
@@ -34,6 +36,10 @@ public class TestPlugin extends JavaPlugin {
 
         this.getCommandRegistry().registerCommand(new QueueCommand("queue", "Fait la queue"));
         this.getCommandRegistry().registerCommand(new SeeQueueCommand("seequeue", "look at the queue bro"));
+
+        this.getEntityStoreRegistry().registerSystem((ISystem<EntityStore>) new DuelDamageSystem());
+        this.getEntityStoreRegistry().registerSystem(new BlockDamageSystem() );
+        this.getEntityStoreRegistry().registerSystem(new NoInteractionSystem() );
 
         DuelManager duelManager = DuelManager.getInstance();
     }
