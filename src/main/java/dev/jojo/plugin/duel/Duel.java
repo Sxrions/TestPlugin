@@ -176,125 +176,53 @@ public class Duel {
     }
 
     private void teleportPlayer(PlayerRef playerRef, World dest){
-        if (playerRef == null) return;
-
-        // Stop retrying if player no longer exists in Universe
         if (Universe.get().getPlayer(playerRef.getUuid()) == null) return;
 
-        Ref<EntityStore> initialRef = null;
-        try {
-            initialRef = playerRef.getReference();
-        } catch (Throwable ignored) {}
+        Ref<EntityStore> ref = playerRef.getReference();
 
-        if (initialRef == null){
-            // retry only while player still exists
+        if (ref == null){
             if (Universe.get().getPlayer(playerRef.getUuid()) != null) {
                 System.out.println("ref pour tp nulle, retrying...");
-                HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> teleportPlayer(playerRef, dest), 100, TimeUnit.MILLISECONDS);
+                HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> teleportPlayer(playerRef, dest), 500, TimeUnit.MILLISECONDS);
             }
             return;
         }
+        Store<EntityStore> store = ref.getStore();
 
-        Store<EntityStore> store;
-        try { store = initialRef.getStore(); } catch (Throwable t) {
-            if (Universe.get().getPlayer(playerRef.getUuid()) != null) {
-                HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> teleportPlayer(playerRef, dest), 150, TimeUnit.MILLISECONDS);
-            }
-            return;
-        }
-        World world = store == null ? null : store.getExternalData().getWorld();
-        if (world == null) return;
+        World world = store.getExternalData().getWorld();
 
         world.execute(() -> {
-            Ref<EntityStore> ref = null;
-            try { ref = playerRef.getReference(); } catch (Throwable ignored) {}
-            if (ref == null){
-                if (Universe.get().getPlayer(playerRef.getUuid()) != null) {
-                    HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
-                        System.out.println("Ref is null for tp, retrying...");
-                        teleportPlayer(playerRef, dest);
-                    },100,TimeUnit.MILLISECONDS);
-                }
-                return;
+            Teleport teleport;
+            if (playerRef.equals(playerRef1)){
+                teleport = new Teleport(dest, new Vector3d(arena.getSpawn1()[0],arena.getSpawn1()[1],arena.getSpawn1()[2]), new Vector3f(0,0,0));
+            }else{
+                teleport = new Teleport(dest, new Vector3d(arena.getSpawn2()[0],arena.getSpawn2()[1],arena.getSpawn2()[2]), new Vector3f(0,0,0));
             }
-
-            try {
-                Store<EntityStore> s = ref.getStore();
-                DeathComponent death = null;
-                try {
-                    death = s.getComponent(ref, DeathComponent.getComponentType());
-                } catch (Throwable ignored) {}
-                if (death != null) {
-                    if (Universe.get().getPlayer(playerRef.getUuid()) != null) {
-                        System.out.println("Player is dead, will retry teleport shortly");
-                        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> teleportPlayer(playerRef, dest), 300, TimeUnit.MILLISECONDS);
-                    }
-                    return;
-                }
-
-                Teleport teleport;
-                if (playerRef.equals(playerRef1)){
-                    teleport = new Teleport(dest, new Vector3d(arena.getSpawn1()[0],arena.getSpawn1()[1],arena.getSpawn1()[2]), new Vector3f(0,0,0));
-                }else{
-                    teleport = new Teleport(dest, new Vector3d(arena.getSpawn2()[0],arena.getSpawn2()[1],arena.getSpawn2()[2]), new Vector3f(0,0,0));
-                }
-                try {
-                    s.addComponent(ref, Teleport.getComponentType(), teleport);
-                } catch (Throwable t) {
-                    System.out.println("teleportPlayer: addComponent failed: " + t.getMessage());
-                }
-            } catch (Throwable t){
-                // defensive: avoid crashing the world thread
-                System.out.println("teleportPlayer: unexpected error: " + t.getMessage());
-            }
+            store.addComponent(ref, Teleport.getComponentType(), teleport);
         });
     }
 
     public void teleportLobby(UUID uuid){
-        // Use the arena world thread to perform world-safe operations but still check for nulls
-        World world = (arena == null) ? null : arena.getWorld();
-        if (world == null) return;
-
+        World world = arena.getWorld();
         world.execute(() -> {
-            try {
-                PlayerRef playerRef = Universe.get().getPlayer(uuid);
-                if (playerRef == null) {
-                    // do not retry if player disappeared
-                    System.out.println("teleportLobby: playerRef is null, aborting");
-                    return;
-                }
-                Ref<EntityStore> ref = null;
-                try { ref = playerRef.getReference(); } catch (Throwable ignored) {}
-                if (ref == null){
-                    if (Universe.get().getPlayer(uuid) != null) {
-                        System.out.println("MAIS PTN REF = null, on retry");
-                        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
-                            System.out.println("Ref is null for tp, retrying...");
-                            teleportLobby(uuid);
-                        },200,TimeUnit.MILLISECONDS);
-                    } else {
-                        System.out.println("teleportLobby: ref null and player gone, aborting");
-                    }
-                    return;
-                }
-                Store<EntityStore> store = null;
-                try { store = ref.getStore(); } catch (Throwable t) {
-                    System.out.println("teleportLobby: getStore failed: " + t.getMessage());
-                    if (Universe.get().getPlayer(uuid) != null) {
-                        HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> teleportLobby(uuid),200,TimeUnit.MILLISECONDS);
-                    }
-                    return;
-                }
-                if (store.getComponent(ref,DeathComponent.getComponentType())!=null){
-                    HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> teleportLobby(uuid),200,TimeUnit.MILLISECONDS);
-                    return;
-                }
-
-                Teleport teleport = new Teleport(Universe.get().getWorld("lobby"), Universe.get().getWorld("lobby").getWorldConfig().getSpawnProvider().getSpawnPoint(Universe.get().getWorld("lobby"), uuid ).getPosition(), new Vector3f());
-                try { store.addComponent(ref, Teleport.getComponentType(), teleport); } catch (Throwable t) { System.out.println("teleportLobby addComponent failed: " + t.getMessage()); }
-            } catch (Throwable t) {
-                System.out.println("teleportLobby: erreur inattendue: " + t.getMessage());
+            PlayerRef playerRef = Universe.get().getPlayer(uuid);
+            if (playerRef == null) {
+                System.out.println("playerRef nul a partir de uuid");
+                return;
             }
+            Ref<EntityStore> ref = playerRef.getReference();
+            if (ref == null){
+                if (Universe.get().getPlayer(uuid) != null) {
+                    System.out.println("ref nulle, retrying tp to lobby");
+                    HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {teleportLobby(uuid);},500,TimeUnit.MILLISECONDS);
+                }
+                return;
+            }
+            Store<EntityStore> store = ref.getStore();
+            World lobby = Universe.get().getWorld("lobby");
+            Vector3d position = lobby.getWorldConfig().getSpawnProvider().getSpawnPoint(lobby, uuid).getPosition();
+            Teleport teleport = new Teleport(lobby, position, new Vector3f());
+            store.addComponent(ref, Teleport.getComponentType(), teleport);
         });
     }
 
