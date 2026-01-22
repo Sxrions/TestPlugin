@@ -52,10 +52,11 @@ public class DuelDamageSystem extends DamageEventSystem {
             UUID playerUuid = playerRef.getUuid();
             World world = paramCommandBuffer.getExternalData().getWorld();
 
+            for (PlayerRef worldPlayerRef : world.getPlayerRefs()) {
+                paramCommandBuffer.addComponent(worldPlayerRef.getReference(), Invulnerable.getComponentType());
+            }
+
             world.execute(() -> {
-                for (PlayerRef worldPlayerRef : world.getPlayerRefs()) {
-                    paramCommandBuffer.getStore().addComponent(worldPlayerRef.getReference(), Invulnerable.getComponentType());
-                }
                 DuelManager.getInstance().handlePlayerDeath(playerUuid);
                 System.out.println("handled");
             });
