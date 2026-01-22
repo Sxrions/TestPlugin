@@ -3,6 +3,7 @@ package dev.jojo.plugin.systems;
 import com.hypixel.hytale.component.*;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.ISystem;
+import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.modules.entity.component.Invulnerable;
 import com.hypixel.hytale.server.core.modules.entity.damage.Damage;
 import com.hypixel.hytale.server.core.modules.entity.damage.DamageEventSystem;
@@ -16,6 +17,7 @@ import dev.jojo.plugin.duel.DuelManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class DuelDamageSystem extends DamageEventSystem {
     @Override
@@ -56,10 +58,9 @@ public class DuelDamageSystem extends DamageEventSystem {
                 paramCommandBuffer.addComponent(worldPlayerRef.getReference(), Invulnerable.getComponentType());
             }
 
-            world.execute(() -> {
-                DuelManager.getInstance().handlePlayerDeath(playerUuid);
-                System.out.println("handled");
-            });
+            DuelManager.getInstance().handlePlayerDeath(playerUuid);
+
+            System.out.println("handled");
         }
     }
 

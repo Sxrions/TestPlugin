@@ -127,11 +127,10 @@ public class DuelManager {
             PlayerRef player1Ref = duel.getPlayerRef1();
             PlayerRef player2Ref = duel.getPlayerRef2();
 
-            world.execute(() -> {
-                duel.end(playerRef);
-                playerDuelMap.remove(player1Ref);
-                playerDuelMap.remove(player2Ref);
-            });
+            duel.end(playerRef);
+            playerDuelMap.remove(player1Ref);
+            playerDuelMap.remove(player2Ref);
+
 
             /*HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
 
