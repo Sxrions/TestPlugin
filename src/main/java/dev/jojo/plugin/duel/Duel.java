@@ -80,17 +80,13 @@ public class Duel {
     public void end(PlayerRef looser){
         this.state = DuelState.ENDING;
 
-        // Defensive: if arena world missing, avoid NPE
         World arenaWorld = arena == null ? null : arena.getWorld();
         if (arenaWorld == null) {
-            // fallback: perform minimal cleanup
             end();
             return;
         }
-
         arenaWorld.execute(() -> {
             try {
-                // Defensive retrieval of component instances: check references before using
                 Ref<EntityStore> ref1 = (playerRef1 == null) ? null : playerRef1.getReference();
                 Ref<EntityStore> ref2 = (playerRef2 == null) ? null : playerRef2.getReference();
 

@@ -6,6 +6,7 @@ import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import dev.jojo.plugin.TestPlugin;
@@ -113,29 +114,28 @@ public class DuelManager {
         matchMake(duel.getKitName());
     }
 
-    public void handlePlayerDeath(PlayerRef deadPlayerRef) {
-        if (deadPlayerRef == null) return;
+    public void handlePlayerDeath(UUID uuid) {
 
-        Ref<EntityStore> playerRefRef = deadPlayerRef.getReference();
+        PlayerRef playerRef = Universe.get().getPlayer(uuid);
+        if (playerRef==null){return;}
 
-        Store<EntityStore> store = playerRefRef.getStore();
-
-        World world = store.getExternalData().getWorld();
-
-
-        if (playerDuelMap.containsKey(deadPlayerRef)) {
-            Duel duel = playerDuelMap.get(deadPlayerRef);
+        if (playerDuelMap.containsKey(playerRef)) {
+            Ref<EntityStore> playerRefRef = playerRef.getReference();
+            Store<EntityStore> store = playerRefRef.getStore();
+            World world = store.getExternalData().getWorld();
+            Duel duel = playerDuelMap.get(playerRef);
             PlayerRef player1Ref = duel.getPlayerRef1();
             PlayerRef player2Ref = duel.getPlayerRef2();
 
+            world.execute(() -> {
+                duel.end(playerRef);
+                playerDuelMap.remove(player1Ref);
+                playerDuelMap.remove(player2Ref);
+            });
 
-            HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
-                world.execute(() -> {
-                    duel.end(deadPlayerRef);
-                    playerDuelMap.remove(player1Ref);
-                    playerDuelMap.remove(player2Ref);
-                });
-            }, 1000, TimeUnit.MILLISECONDS);
+            /*HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
+
+            }, 2000, TimeUnit.MILLISECONDS);*/
             matchMake(duel.getKitName());
         }
     }

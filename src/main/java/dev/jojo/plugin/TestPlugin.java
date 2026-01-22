@@ -8,6 +8,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import dev.jojo.plugin.commands.QueueCommand;
 import dev.jojo.plugin.commands.SeeQueueCommand;
 import dev.jojo.plugin.systems.BlockDamageSystem;
+import dev.jojo.plugin.systems.DeathSystem;
 import dev.jojo.plugin.systems.DuelDamageSystem;
 import dev.jojo.plugin.duel.DuelManager;
 import dev.jojo.plugin.systems.NoInteractionSystem;
@@ -38,6 +39,7 @@ public class TestPlugin extends JavaPlugin {
         this.getCommandRegistry().registerCommand(new SeeQueueCommand("seequeue", "look at the queue bro"));
 
         this.getEntityStoreRegistry().registerSystem((ISystem<EntityStore>) new DuelDamageSystem());
+        //this.getEntityStoreRegistry().registerSystem((ISystem<EntityStore>) new DeathSystem());
         this.getEntityStoreRegistry().registerSystem(new BlockDamageSystem() );
         this.getEntityStoreRegistry().registerSystem(new NoInteractionSystem() );
 
