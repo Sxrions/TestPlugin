@@ -3,11 +3,8 @@ package dev.jojo.plugin;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-import com.hypixel.hytale.server.core.universe.Universe;
-import com.hypixel.hytale.server.core.universe.world.World;
 import dev.jojo.plugin.commands.QueueCommand;
 import dev.jojo.plugin.commands.SeeQueueCommand;
-import dev.jojo.plugin.duel.DuelManager;
 import dev.jojo.plugin.systems.BlockDamageSystem;
 import dev.jojo.plugin.systems.NoInteractionSystem;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +14,6 @@ import java.util.logging.Level;
 public class TestPlugin extends JavaPlugin {
     HytaleLogger logger = HytaleLogger.forEnclosingClass();
     static TestPlugin pluginInstance;
-    public World lobby;
 
     public TestPlugin(@NotNull JavaPluginInit init) {
         super(init);
@@ -40,9 +36,5 @@ public class TestPlugin extends JavaPlugin {
         //this.getEntityStoreRegistry().registerSystem((ISystem<EntityStore>) new DeathSystem());
         this.getEntityStoreRegistry().registerSystem(new BlockDamageSystem());
         this.getEntityStoreRegistry().registerSystem(new NoInteractionSystem());
-
-        this.lobby = Universe.get().getWorld("lobby");
-
-        DuelManager duelManager = DuelManager.getInstance();
     }
 }

@@ -11,10 +11,10 @@ import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
-import dev.jojo.plugin.TestPlugin;
 import dev.jojo.plugin.arena.Arena;
 import dev.jojo.plugin.kit.KitManager;
 
@@ -32,6 +32,8 @@ public class Duel {
     private int countdown = 5;
     private int timer = 120;
 
+    private World lobby;
+
     private ScheduledFuture<?> taskCountdown;
     private ScheduledFuture<?> taskTimer;
 
@@ -42,6 +44,8 @@ public class Duel {
         this.kitName = kitName;
 
         this.arena.setOccupied(true); //OCCUPATION DE L'ARENE DES LA CREATION DU DUEL
+
+        this.lobby = Universe.get().getWorld("lobby");
     }
 
     public void startCountdown() { //TODO bloquer les déplacements des joueurs (ou set speed 0 jsp comment)
@@ -81,7 +85,7 @@ public class Duel {
         this.state = DuelState.ENDING;
 
 
-        TestPlugin.getPluginInstance().lobby.execute(() -> {
+        this.lobby.execute(() -> {
 
             if (looser.getUuid().equals(playerRef1.getUuid())) {
                 EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw("VICTOIRE"), Message.raw(playerRef1.getUsername() + " est nul"), true);
@@ -104,8 +108,8 @@ public class Duel {
     public void end() {
         cancelTasks();
 
-        Player p1 = TestPlugin.getPluginInstance().lobby.getEntityStore().getStore().getComponent(playerRef1.getReference(), Player.getComponentType());
-        Player p2 = TestPlugin.getPluginInstance().lobby.getEntityStore().getStore().getComponent(playerRef2.getReference(), Player.getComponentType());
+        Player p1 = lobby.getEntityStore().getStore().getComponent(playerRef1.getReference(), Player.getComponentType());
+        Player p2 = lobby.getEntityStore().getStore().getComponent(playerRef2.getReference(), Player.getComponentType());
         p1.getInventory().clear();
         p2.getInventory().clear();
 
@@ -132,7 +136,6 @@ public class Duel {
         if (playerRef == null) return;
         Ref<EntityStore> ref = playerRef.getReference();
         Store<EntityStore> store = ref.getStore();
-        World lobby = TestPlugin.getPluginInstance().lobby;
         lobby.execute(() -> {
             Teleport teleport;
             if (playerRef.equals(playerRef1)) {
@@ -148,7 +151,6 @@ public class Duel {
         if (playerRef == null) return;
         Ref<EntityStore> ref = playerRef.getReference();
         Store<EntityStore> store = ref.getStore();
-        World lobby = TestPlugin.getPluginInstance().lobby;
         lobby.execute(() -> {
             Teleport teleport = new Teleport(lobby, lobby.getWorldConfig().getSpawnProvider().getSpawnPoint(lobby, playerRef.getUuid()).getPosition(), new Vector3f());
             store.addComponent(ref, Teleport.getComponentType(), teleport);
