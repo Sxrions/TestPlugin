@@ -1,19 +1,17 @@
 package dev.jojo.plugin.duel;
 
-import com.hypixel.hytale.component.Ref;
-import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.Universe;
-import com.hypixel.hytale.server.core.universe.world.World;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import dev.jojo.plugin.TestPlugin;
 import dev.jojo.plugin.arena.Arena;
 import dev.jojo.plugin.arena.ArenaManager;
 import dev.jojo.plugin.kit.KitManager;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
 
 public class DuelManager {
     private static DuelManager instance;

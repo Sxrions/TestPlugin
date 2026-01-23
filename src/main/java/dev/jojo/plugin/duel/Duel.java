@@ -4,9 +4,12 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
+import com.hypixel.hytale.server.core.modules.entity.component.Invulnerable;
 import com.hypixel.hytale.server.core.modules.entity.teleport.Teleport;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
@@ -51,15 +54,35 @@ public class Duel {
     public void startCountdown() { //TODO bloquer les déplacements des joueurs (ou set speed 0 jsp comment)
         teleportPlayer(playerRef1);
         teleportPlayer(playerRef2);
+        Store<EntityStore> store = playerRef1.getReference().getStore();
+        MovementManager movementManager1 = store.getComponent(playerRef1.getReference(), MovementManager.getComponentType());
+        MovementManager movementManager2 = store.getComponent(playerRef2.getReference(), MovementManager.getComponentType());
+        float baseSpeed1 = movementManager1.getSettings().baseSpeed;
+        float baseSpeed2 = movementManager2.getSettings().baseSpeed;
+        movementManager1.getSettings().baseSpeed = 0.0f;
+        movementManager2.getSettings().baseSpeed = 0.0f;
+        float accel1 = movementManager1.getSettings().acceleration;
+        float accel2 = movementManager2.getSettings().acceleration;
+        movementManager1.getSettings().acceleration = 0.0f;
+        movementManager2.getSettings().acceleration = 0.0f;
+        movementManager1.update(playerRef1.getPacketHandler());
+        movementManager1.update(playerRef2.getPacketHandler());
+
         this.state = DuelState.STARTING;
         taskCountdown = HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(() -> {
             if (countdown <= 0) {
                 taskCountdown.cancel(false);
+                movementManager1.getSettings().baseSpeed = baseSpeed1;
+                movementManager2.getSettings().baseSpeed = baseSpeed2;
+                movementManager1.getSettings().acceleration = accel1;
+                movementManager2.getSettings().acceleration = accel2;
+                movementManager1.update(playerRef1.getPacketHandler());
+                movementManager2.update(playerRef2.getPacketHandler());
                 start();
                 return;
             }
-            EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw(countdown + " secondes..."), Message.raw("Duel dans :"), true);
-            EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw(countdown + " secondes..."), Message.raw("Duel dans :"), true);
+            EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw(countdown + " secondes..."), Message.raw("Duel dans :"), false, null, 0.7f, 0.1f, 0.1f);
+            EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw(countdown + " secondes..."), Message.raw("Duel dans :"), false, null, 0.7f, 0.1f, 0.1f);
             countdown--;
         }, 0, 1, TimeUnit.SECONDS);
     }
@@ -83,7 +106,7 @@ public class Duel {
 
     public void end(PlayerRef looser) {
         this.state = DuelState.ENDING;
-
+        System.out.println("END LOOSER CALLED");
 
         this.lobby.execute(() -> {
 
@@ -107,18 +130,18 @@ public class Duel {
 
     public void end() {
         cancelTasks();
-
+        System.out.println("END CALLED");
         Player p1 = lobby.getEntityStore().getStore().getComponent(playerRef1.getReference(), Player.getComponentType());
         Player p2 = lobby.getEntityStore().getStore().getComponent(playerRef2.getReference(), Player.getComponentType());
         p1.getInventory().clear();
         p2.getInventory().clear();
 
-        heal(playerRef1.getReference());
-        heal(playerRef2.getReference());
-
         //TODO ICI QUE VIENT LE KICK
         teleportLobby(playerRef1);
         teleportLobby(playerRef2);
+
+        heal(playerRef1.getReference());
+        heal(playerRef2.getReference());
 
         //TODO RESET LES JOUEURS, RESET l'arene
         //TODO PAS OUBLIER DE VIRER DUEL DE DUELMANAGER
@@ -139,20 +162,22 @@ public class Duel {
         lobby.execute(() -> {
             Teleport teleport;
             if (playerRef.equals(playerRef1)) {
-                teleport = new Teleport(lobby, new Vector3d(arena.getSpawn1()[0], arena.getSpawn1()[1], arena.getSpawn1()[2]), new Vector3f(0, 0, 0));
+                teleport = new Teleport(lobby, new Vector3d(arena.getSpawn1()[0], arena.getSpawn1()[1], arena.getSpawn1()[2]), new Vector3f(arena.getOrient1()[0], arena.getOrient1()[1], arena.getOrient1()[2]));
             } else {
-                teleport = new Teleport(lobby, new Vector3d(arena.getSpawn2()[0], arena.getSpawn2()[1], arena.getSpawn2()[2]), new Vector3f(0, 0, 0));
+                teleport = new Teleport(lobby, new Vector3d(arena.getSpawn2()[0], arena.getSpawn2()[1], arena.getSpawn2()[2]), new Vector3f(arena.getOrient2()[0], arena.getOrient2()[1], arena.getOrient2()[2]));
             }
             store.addComponent(ref, Teleport.getComponentType(), teleport);
         });
     }
 
     private void teleportLobby(PlayerRef playerRef) {
-        if (playerRef == null) return;
+        System.out.println("TELEPORING");
         Ref<EntityStore> ref = playerRef.getReference();
         Store<EntityStore> store = ref.getStore();
         lobby.execute(() -> {
             Teleport teleport = new Teleport(lobby, lobby.getWorldConfig().getSpawnProvider().getSpawnPoint(lobby, playerRef.getUuid()).getPosition(), new Vector3f());
+            if (store.getComponent(ref, Player.getComponentType()).getGameMode().equals(GameMode.Adventure))
+                store.addComponent(ref, Invulnerable.getComponentType());
             store.addComponent(ref, Teleport.getComponentType(), teleport);
         });
     }

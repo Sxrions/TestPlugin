@@ -7,6 +7,7 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.modules.entity.component.Invulnerable;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -29,28 +30,29 @@ public class KitManager {
     private final JavaPlugin plugin;
 
 
-    private KitManager(){
+    private KitManager() {
         this.plugin = TestPlugin.getPluginInstance();
-        this.kitsFolder = new File(plugin.getDataDirectory().toFile(),"kits");
+        this.kitsFolder = new File(plugin.getDataDirectory().toFile(), "kits");
         this.kits = new HashMap<>();
     }
 
     public static KitManager getInstance() {
-        if (instance == null){
+        if (instance == null) {
             instance = new KitManager();
         }
         return instance;
     }
 
-    public void loadKits(){
+    public void loadKits() {
         plugin.getLogger().atInfo().log("Loading kits...");
         File[] files = kitsFolder.listFiles();
         for (File file : files) {
-            if (file.getName().endsWith(".json")){
-                String kitName = file.getName().replace(".json","");
-                try{
-                    HashMap<String, Integer> items = mapper.readValue(file, new TypeReference<HashMap<String, Integer>>() {});
-                    Kit kit = new Kit(kitName,items);
+            if (file.getName().endsWith(".json")) {
+                String kitName = file.getName().replace(".json", "");
+                try {
+                    HashMap<String, Integer> items = mapper.readValue(file, new TypeReference<HashMap<String, Integer>>() {
+                    });
+                    Kit kit = new Kit(kitName, items);
                     kits.put(kitName, kit);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -60,36 +62,37 @@ public class KitManager {
         plugin.getLogger().atInfo().log("Kits loaded.");
     }
 
-    public void listKits(){
+    public void listKits() {
         for (Map.Entry<String, Kit> entry : kits.entrySet()) {
             plugin.getLogger().at(Level.INFO).log(entry.getKey());
             Map<String, Integer> items = entry.getValue().getItems();
             for (Map.Entry<String, Integer> item : items.entrySet()) {
-                plugin.getLogger().at(Level.INFO).log(item.getKey() +" : "+item.getValue());
+                plugin.getLogger().at(Level.INFO).log(item.getKey() + " : " + item.getValue());
             }
         }
     }
 
-    private Kit getKit(String name){
+    private Kit getKit(String name) {
         return kits.get(name);
     }
 
-    public boolean exists(String name){
+    public boolean exists(String name) {
         return kits.containsKey(name);
     }
 
-    public void applyKit(PlayerRef playerRef, String kitName){
+    public void applyKit(PlayerRef playerRef, String kitName) {
         Store<EntityStore> store = playerRef.getReference().getStore();
         store.getExternalData().getWorld().execute(() -> {
+            System.out.println("INVUL RETIREE : " + store.removeComponentIfExists(playerRef.getReference(), Invulnerable.getComponentType()));
             Player player = store.getComponent(playerRef.getReference(), Player.getComponentType());
             player.getInventory().clear();
             Kit kit = getKit(kitName);
             Map<String, Integer> items = kit.getItems();
             for (String itemId : items.keySet()) {
                 ItemStack itemStack = new ItemStack(itemId, items.get(itemId));
-                if (itemId.contains("Armor")){
+                if (itemId.contains("Armor")) {
                     player.getInventory().getArmor().addItemStack(itemStack);
-                }else {
+                } else {
                     player.getInventory().getCombinedHotbarFirst().addItemStack(itemStack);
                 }
             }
@@ -100,7 +103,7 @@ public class KitManager {
 
             HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
                 stats.setStatValue(index, stats.get(index).getMax());
-            },500, TimeUnit.MILLISECONDS);
+            }, 500, TimeUnit.MILLISECONDS);
         });
     }
 
