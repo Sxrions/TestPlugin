@@ -7,7 +7,6 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
-import com.hypixel.hytale.server.core.modules.entity.component.Invulnerable;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -83,7 +82,6 @@ public class KitManager {
     public void applyKit(PlayerRef playerRef, String kitName) {
         Store<EntityStore> store = playerRef.getReference().getStore();
         store.getExternalData().getWorld().execute(() -> {
-            System.out.println("INVUL RETIREE : " + store.removeComponentIfExists(playerRef.getReference(), Invulnerable.getComponentType()));
             Player player = store.getComponent(playerRef.getReference(), Player.getComponentType());
             player.getInventory().clear();
             Kit kit = getKit(kitName);

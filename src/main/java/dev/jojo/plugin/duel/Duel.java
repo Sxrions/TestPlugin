@@ -51,7 +51,7 @@ public class Duel {
         this.lobby = Universe.get().getWorld("lobby");
     }
 
-    public void startCountdown() { //TODO bloquer les déplacements des joueurs (ou set speed 0 jsp comment)
+    public void startCountdown() {
         teleportPlayer(playerRef1);
         teleportPlayer(playerRef2);
         Store<EntityStore> store = playerRef1.getReference().getStore();
@@ -81,8 +81,8 @@ public class Duel {
                 start();
                 return;
             }
-            EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw(countdown + " secondes..."), Message.raw("Duel dans :"), false, null, 0.7f, 0.1f, 0.1f);
-            EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw(countdown + " secondes..."), Message.raw("Duel dans :"), false, null, 0.7f, 0.1f, 0.1f);
+            EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw(countdown + " seconds..."), Message.raw("Duel in :"), false, null, 0.7f, 0.1f, 0.1f);
+            EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw(countdown + " seconds..."), Message.raw("Duel in :"), false, null, 0.7f, 0.1f, 0.1f);
             countdown--;
         }, 0, 1, TimeUnit.SECONDS);
     }
@@ -91,7 +91,6 @@ public class Duel {
         KitManager kitManager = KitManager.getInstance();
         kitManager.applyKit(playerRef1, kitName);
         kitManager.applyKit(playerRef2, kitName);
-        //TODO MODIFIER ETATS JOUEURS jsp encore ce que je veux dire par la
         taskTimer = HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(() -> {
             if (timer <= 0) {
                 taskTimer.cancel(false);
@@ -106,16 +105,15 @@ public class Duel {
 
     public void end(PlayerRef looser) {
         this.state = DuelState.ENDING;
-        System.out.println("END LOOSER CALLED");
 
         this.lobby.execute(() -> {
 
             if (looser.getUuid().equals(playerRef1.getUuid())) {
-                EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw("VICTOIRE"), Message.raw(playerRef1.getUsername() + " est nul"), true);
-                EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw("DÉFAITE"), Message.raw(playerRef2.getUsername() + " est supérieur"), true);
+                EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw("VICTORY").color(Color.green), Message.raw(playerRef1.getUsername() + " is bad at the video game"), true);
+                EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw("DEFEAT").color(Color.red), Message.raw(playerRef2.getUsername() + " is GOATED"), true);
             } else {
-                EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw("VICTOIRE"), Message.raw(playerRef2.getUsername() + " est nul"), true);
-                EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw("DÉFAITE"), Message.raw(playerRef1.getUsername() + " est supérieur"), true);
+                EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw("VICTORY").color(Color.green), Message.raw(playerRef2.getUsername() + " is bad at the video game"), true);
+                EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw("DEFEAT").color(Color.red), Message.raw(playerRef1.getUsername() + " is GOATED"), true);
             }
             end();
         });
@@ -123,8 +121,8 @@ public class Duel {
 
     public void endDraw() {
         this.state = DuelState.ENDING;
-        EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw("DRAW !").color(Color.blue), Message.raw("You're all guez"), true);
-        EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw("DRAW !").color(Color.blue), Message.raw("You're all guez"), true);
+        EventTitleUtil.showEventTitleToPlayer(playerRef1, Message.raw("DRAW !").color(Color.blue), Message.raw("You're all bad ahah"), true);
+        EventTitleUtil.showEventTitleToPlayer(playerRef2, Message.raw("DRAW !").color(Color.blue), Message.raw("You're all bad ahah"), true);
         end();
     }
 
@@ -136,15 +134,11 @@ public class Duel {
         p1.getInventory().clear();
         p2.getInventory().clear();
 
-        //TODO ICI QUE VIENT LE KICK
         teleportLobby(playerRef1);
         teleportLobby(playerRef2);
 
         heal(playerRef1.getReference());
         heal(playerRef2.getReference());
-
-        //TODO RESET LES JOUEURS, RESET l'arene
-        //TODO PAS OUBLIER DE VIRER DUEL DE DUELMANAGER
 
         arena.setOccupied(false);
     }
