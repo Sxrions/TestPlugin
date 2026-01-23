@@ -1,3 +1,4 @@
+/*
 package dev.jojo.plugin.systems;
 
 import com.hypixel.hytale.component.*;
@@ -69,3 +70,4 @@ public class DuelDamageSystem extends DamageEventSystem {
         return Archetype.empty();
     }
 }
+*/

@@ -8,15 +8,14 @@ import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredAr
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractPlayerCommand;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import dev.jojo.plugin.duel.DuelManager;
-import dev.jojo.plugin.kit.KitManager;
 import org.jetbrains.annotations.NotNull;
 
 public class SeeQueueCommand extends AbstractPlayerCommand {
     private RequiredArg<String> kit;
+
     public SeeQueueCommand(@NotNull String name, @NotNull String description) {
         super(name, description);
         kit = withRequiredArg("kit", "kit", ArgTypes.STRING);

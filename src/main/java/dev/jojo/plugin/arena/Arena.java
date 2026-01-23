@@ -1,16 +1,13 @@
 package dev.jojo.plugin.arena;
 
-import com.hypixel.hytale.server.core.universe.Universe;
-import com.hypixel.hytale.server.core.universe.world.World;
-
 public class Arena {
-    private String worldName;
+    private String name;
     private float[] spawn1;
     private float[] spawn2;
     private boolean isOccupied;
 
     public Arena(String name, float[] spawn1, float[] spawn2) {
-        this.worldName = name;
+        this.name = name;
         this.spawn1 = spawn1;
         this.spawn2 = spawn2;
         this.isOccupied = false;
@@ -20,12 +17,12 @@ public class Arena {
         this.isOccupied = false;
     }
 
-    public String getWorldName() {
-        return worldName;
+    public String getName() {
+        return this.name;
     }
 
-    public void setWorldName(String worldName) {
-        this.worldName = worldName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setOccupied(boolean occupied) {
@@ -50,9 +47,5 @@ public class Arena {
 
     public float[] getSpawn2() {
         return spawn2;
-    }
-
-    public World getWorld(){
-        return Universe.get().getWorld(worldName);
     }
 }

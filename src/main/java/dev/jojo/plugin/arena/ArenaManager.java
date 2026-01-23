@@ -1,7 +1,6 @@
 package dev.jojo.plugin.arena;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.protobuf.JavaType;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import dev.jojo.plugin.TestPlugin;
 
@@ -15,7 +14,7 @@ public class ArenaManager {
     private final Map<String, Arena> arenas;
     private final JavaPlugin plugin = TestPlugin.getPluginInstance();
 
-    private ArenaManager(){
+    private ArenaManager() {
         this.arenasFolder = new File(plugin.getDataDirectory().toFile(), "arenas");
         arenas = new HashMap<>();
     }
@@ -27,27 +26,28 @@ public class ArenaManager {
         return instance;
     }
 
-    public Arena getRandomFreeArena(){
+    public Arena getRandomFreeArena() {
         ArrayList<Arena> arenasList = new ArrayList<>();
         for (Arena arena : arenas.values()) {
-            if (!arena.isOccupied()){
+            if (!arena.isOccupied()) {
                 arenasList.add(arena);
             }
         }
-        if (!arenasList.isEmpty()){
-            int index = (int) Math.round(Math.random() * (arenasList.size()-1));
+        if (!arenasList.isEmpty()) {
+            int index = (int) Math.round(Math.random() * (arenasList.size() - 1));
             return arenasList.get(index);
-        } return null;
+        }
+        return null;
     }
 
-    public void loadArenas(){
+    public void loadArenas() {
         plugin.getLogger().atInfo().log("Arenas loading...");
         File[] files = arenasFolder.listFiles();
-        for (File file : files){
-            if (file.getName().endsWith(".json")){
+        for (File file : files) {
+            if (file.getName().endsWith(".json")) {
                 try {
                     Arena arena = mapper.readValue(file, Arena.class);
-                    arenas.put(arena.getWorldName(), arena);
+                    arenas.put(arena.getName(), arena);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -56,13 +56,13 @@ public class ArenaManager {
         plugin.getLogger().atInfo().log("Arenas loaded.");
     }
 
-    public void listArenas(){
+    public void listArenas() {
         plugin.getLogger().atInfo().log("ARENAS : ");
         for (Arena arena : arenas.values()) {
-            plugin.getLogger().atInfo().log("name : "+ arena.getWorldName());
-            plugin.getLogger().atInfo().log("coords 1 : "+ arena.getSpawn1()[0] + " " +arena.getSpawn1()[0] + " " +arena.getSpawn1()[0]);
-            plugin.getLogger().atInfo().log("coords 2 : "+ arena.getSpawn2()[0] + " " +arena.getSpawn2()[0] + " " +arena.getSpawn2()[0]);
-            plugin.getLogger().atInfo().log("Occupied ? : "+ arena.isOccupied());
+            plugin.getLogger().atInfo().log("name : " + arena.getName());
+            plugin.getLogger().atInfo().log("coords 1 : " + arena.getSpawn1()[0] + " " + arena.getSpawn1()[0] + " " + arena.getSpawn1()[0]);
+            plugin.getLogger().atInfo().log("coords 2 : " + arena.getSpawn2()[0] + " " + arena.getSpawn2()[0] + " " + arena.getSpawn2()[0]);
+            plugin.getLogger().atInfo().log("Occupied ? : " + arena.isOccupied());
         }
     }
 }

@@ -2,7 +2,6 @@ package dev.jojo.plugin.duel;
 
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -15,11 +14,10 @@ import dev.jojo.plugin.arena.ArenaManager;
 import dev.jojo.plugin.kit.KitManager;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class DuelManager {
     private static DuelManager instance;
-    private JavaPlugin plugin = TestPlugin.getPluginInstance();
+    private final JavaPlugin plugin = TestPlugin.getPluginInstance();
     private final Map<PlayerRef, Duel> playerDuelMap;
     private final ArenaManager arenaManager;
     private final Map<String, Queue<PlayerRef>> queues;
@@ -62,7 +60,7 @@ public class DuelManager {
         }
     }
 
-    public boolean matchMake(String kit) {
+    public void matchMake(String kit) {
         Arena randomArena = arenaManager.getRandomFreeArena();
         if (queues.get(kit).size() >= 2 && randomArena != null) {
             PlayerRef p1 = queues.get(kit).remove();
@@ -71,10 +69,8 @@ public class DuelManager {
             playerDuelMap.put(p1, duel);
             playerDuelMap.put(p2, duel);
             duel.startCountdown();
-            return true;
         }
 
-        return false;
     }
 
     //DEBUG
@@ -91,45 +87,33 @@ public class DuelManager {
     }
 
     public void handlePlayerDisconnect(PlayerDisconnectEvent evt) {
-        if (evt == null) return;
         PlayerRef disconnected = evt.getPlayerRef();
         removeFromQueue(disconnected);
-        Duel duel;
-        synchronized (playerDuelMap) {
-            duel = playerDuelMap.remove(disconnected);
-            if (duel != null) {
-                PlayerRef p1 = duel.getPlayerRef1();
-                PlayerRef p2 = duel.getPlayerRef2();
-                if (p1 != null) playerDuelMap.remove(p1);
-                if (p2 != null) playerDuelMap.remove(p2);
-            }
-        }
 
-        if (duel == null) {
-            return;
+        if (playerDuelMap.containsKey(disconnected)) {
+            Duel duel = playerDuelMap.remove(disconnected);
+            PlayerRef p1 = duel.getPlayerRef1();
+            PlayerRef p2 = duel.getPlayerRef2();
+            playerDuelMap.remove(p1);
+            playerDuelMap.remove(p2);
+            duel.cancelTasks();
+            duel.end(disconnected);
+            matchMake(duel.getKitName());
         }
-        duel.cancelTasks();
-        duel.end(disconnected);
-
-        matchMake(duel.getKitName());
     }
 
-    public void handlePlayerDeath(UUID uuid) {
+    public void handlePlayerDeath(PlayerRef playerRef) {
 
-        PlayerRef playerRef = Universe.get().getPlayer(uuid);
-        if (playerRef==null){return;}
+        if (playerRef == null) return;
 
         if (playerDuelMap.containsKey(playerRef)) {
-            Ref<EntityStore> playerRefRef = playerRef.getReference();
-            Store<EntityStore> store = playerRefRef.getStore();
-            World world = store.getExternalData().getWorld();
             Duel duel = playerDuelMap.get(playerRef);
-            PlayerRef player1Ref = duel.getPlayerRef1();
-            PlayerRef player2Ref = duel.getPlayerRef2();
+            PlayerRef p1 = duel.getPlayerRef1();
+            PlayerRef p2 = duel.getPlayerRef2();
 
             duel.end(playerRef);
-            playerDuelMap.remove(player1Ref);
-            playerDuelMap.remove(player2Ref);
+            playerDuelMap.remove(p1);
+            playerDuelMap.remove(p2);
 
 
             /*HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {

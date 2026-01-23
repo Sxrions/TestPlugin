@@ -1,7 +1,5 @@
 package dev.jojo.plugin.kit;
 
-import com.hypixel.hytale.server.core.asset.type.item.config.Item;
-
 import java.util.Map;
 
 public class Kit {

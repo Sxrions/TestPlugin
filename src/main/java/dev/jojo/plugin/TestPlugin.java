@@ -1,16 +1,14 @@
 package dev.jojo.plugin;
 
-import com.hypixel.hytale.component.system.ISystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.World;
 import dev.jojo.plugin.commands.QueueCommand;
 import dev.jojo.plugin.commands.SeeQueueCommand;
-import dev.jojo.plugin.systems.BlockDamageSystem;
-import dev.jojo.plugin.systems.DeathSystem;
-import dev.jojo.plugin.systems.DuelDamageSystem;
 import dev.jojo.plugin.duel.DuelManager;
+import dev.jojo.plugin.systems.BlockDamageSystem;
 import dev.jojo.plugin.systems.NoInteractionSystem;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,13 +17,14 @@ import java.util.logging.Level;
 public class TestPlugin extends JavaPlugin {
     HytaleLogger logger = HytaleLogger.forEnclosingClass();
     static TestPlugin pluginInstance;
+    public World lobby;
 
     public TestPlugin(@NotNull JavaPluginInit init) {
         super(init);
         pluginInstance = this;
     }
 
-    public static TestPlugin getPluginInstance(){
+    public static TestPlugin getPluginInstance() {
         return pluginInstance;
     }
 
@@ -38,10 +37,11 @@ public class TestPlugin extends JavaPlugin {
         this.getCommandRegistry().registerCommand(new QueueCommand("queue", "Fait la queue"));
         this.getCommandRegistry().registerCommand(new SeeQueueCommand("seequeue", "look at the queue bro"));
 
-        this.getEntityStoreRegistry().registerSystem((ISystem<EntityStore>) new DuelDamageSystem());
         //this.getEntityStoreRegistry().registerSystem((ISystem<EntityStore>) new DeathSystem());
-        this.getEntityStoreRegistry().registerSystem(new BlockDamageSystem() );
-        this.getEntityStoreRegistry().registerSystem(new NoInteractionSystem() );
+        this.getEntityStoreRegistry().registerSystem(new BlockDamageSystem());
+        this.getEntityStoreRegistry().registerSystem(new NoInteractionSystem());
+
+        this.lobby = Universe.get().getWorld("lobby");
 
         DuelManager duelManager = DuelManager.getInstance();
     }
