@@ -4,6 +4,7 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import dev.jojo.plugin.commands.DequeueCommand;
 import dev.jojo.plugin.commands.QueueCommand;
 import dev.jojo.plugin.commands.SeeQueueCommand;
 import dev.jojo.plugin.systems.BlockDamageSystem;
@@ -33,8 +34,9 @@ public class TestPlugin extends JavaPlugin {
         logger.at(Level.INFO).log("OMG LE MOD MARCHE");
         logger.at(Level.INFO).log(this.getDataDirectory().toFile().toString());
 
-        this.getCommandRegistry().registerCommand(new QueueCommand("queue", "Fait la queue"));
-        this.getCommandRegistry().registerCommand(new SeeQueueCommand("seequeue", "look at the queue bro"));
+        this.getCommandRegistry().registerCommand(new QueueCommand("queue", "Queue into a duel"));
+        this.getCommandRegistry().registerCommand(new DequeueCommand("dq", "Remove yourself from the queue"));
+        this.getCommandRegistry().registerCommand(new SeeQueueCommand("seequeue", "See queue for a kit"));
 
         this.getEntityStoreRegistry().registerSystem(new DeathSystem());
         this.getEntityStoreRegistry().registerSystem(new BlockDamageSystem());

@@ -121,4 +121,11 @@ public class DuelManager {
         }
     }
 
+    public boolean isPlayerInQueue(PlayerRef playerRef) {
+        return playerKitQueueMap.containsKey(playerRef);
+    }
+
+    public boolean isPlayerInDuel(PlayerRef playerRef) {
+        return playerDuelMap.containsKey(playerRef);
+    }
 }

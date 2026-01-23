@@ -28,9 +28,14 @@ public class QueueCommand extends AbstractPlayerCommand {
             String kitName = kit.get(paramCommandContext);
             KitManager kitManager = KitManager.getInstance();
             DuelManager duelManager = DuelManager.getInstance();
-            if (kitManager.exists(kitName)){
+
+            if (duelManager.isPlayerInDuel(paramPlayerRef) || duelManager.isPlayerInQueue(paramPlayerRef)) {
+                paramCommandContext.sendMessage(Message.raw("Impossible to queue at this moment"));
+                return;
+            }
+            if (kitManager.exists(kitName)) {
                 assert paramPlayerRef != null;
-                duelManager.addToQueue(paramPlayerRef,kitName);
+                duelManager.addToQueue(paramPlayerRef, kitName);
             } else {
                 paramCommandContext.sendMessage(Message.raw("Kit non existant"));
             }
